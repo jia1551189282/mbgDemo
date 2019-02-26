@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--
+        1 可以引用外部的properties的配置文件
+        resource ：引入类路径下的资源路径
+        URL:引入网络路径下或者磁盘路径下的资源
+    -->
+    <properties resource="dbconfig.properties"></properties>
+    <!--
+        2 settings包含很多重要的设置项
+            setting：用来设置每一个设置项
+                name：设置项的名称
+                value：设置项的取值
+    -->
+    <settings>
+        <!--开启驼峰命名  默认是不开启的-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+        <!--
+            3 typeAliases :
+                别名处理器：可以为我们的java类型起别名 别名不区分大小写
+        -->
+    <typeAliases>
+        <!--3.1
+            typealias:为某个java类型起别名
+                type:要起别名的类的全类名（默认是类名的小写）
+                alias：指定别名的名称
+        -->
+        <!--<typeAlias type="com.domain.Employee" alias="emp"></typeAlias>-->
+
+        <!--
+            3.2 package:为某个包下的所有类起别名
+                    name:指定的包名称（为当前包以及下面所有的后代包的每一个类都起一个默认别名（类名小写））
+        -->
+        <package name="com.domain"></package>
+        <!--
+            3.3 可以给某个类单独的别名
+                    使用@Alias注解  为某个类型指定新的别名
+        -->
+    </typeAliases>
+    <!--
+        4.environments:
+            环境们：mybatis 可以配置多种环境 default 指定使用某种环境  可以实现快速的切换环境
+                environment: 配置一个具体的环境 id表示当前环境的唯一标识 必须要有两个标签
+                    1 transactionManager：事务管理器；
+					    type：事务管理器的类型;JDBC(JdbcTransactionFactory)|MANAGED(ManagedTransactionFactory)
+						        自定义事务管理器：实现TransactionFactory接口.type指定为全类名
+				
+				    2 dataSource：数据源;
+					     type:数据源类型;UNPOOLED(UnpooledDataSourceFactory)
+								|POOLED(PooledDataSourceFactory)
+								|JNDI(JndiDataSourceFactory)
+					        自定义数据源：实现DataSourceFactory接口，type是全类名
+
+    -->
+    <environments default="development">
+        <!--开发环境-->
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+            </dataSource>
+        </environment>
+        <!--生产环境-->
+        <environment id="pro">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--
+        5 databaseIdProvider:支持多数据库厂商：
+            type="DB_VENDOR"：VendorDatabaseIdProvider
+		 	作用就是得到数据库厂商的标识(驱动getDatabaseProductName())，mybatis就能根据数据库厂商标识来执行不同的sql;
+		 	MySQL，Oracle，SQL Server,xxxx
+    -->
+    <databaseIdProvider type="DB_VENDOR">
+        <!--为不同的数据库厂商起别名-->
+        <property name="MySQL" value="mysql"></property>
+        <property name="Oracle" value="oracle"></property>
+        <property name="SQL Server" value="sqlserver"></property>
+    </databaseIdProvider>
+    <!--
+        6 <mappers> 将mapper映射文件注册到 全局文件中
+
+    -->
+    <!-- 将我们写好的sql映射文件（EmployeeMapper.xml）一定要注册到全局配置文件（mybatis-config.xml）中 -->
+    <mappers>
+        <!--
+            6.1 mapper：
+                    注册一个映射文件：
+                        resource:引用类路径下的sql映射文件(mybatis/mapper/EmployeeMapper.xml)
+                        url:引用网路路径或者磁盘路径下的sql映射文件(file:///var/mappers/AuthorMapper.xml)
+                        class：引用（注册）接口，
+					        1、有sql映射文件，映射文件名必须和接口同名，并且放在与接口同一目录下；
+					        2、没有sql映射文件，所有的sql都是利用注解写在接口上;
+					    推荐：
+						比较重要的，复杂的Dao接口我们来写sql映射文件
+						不重要，简单的Dao接口为了开发快速可以使用注解；
+        -->
+        <!--<mapper resource="EmployeeMapper.xml" />-->
+
+        <!--
+            6.2 package:
+                    批量注册
+                    要保证mapper.java和 mapper.xml放在同一文件夹下
+        -->
+        <package name="com.mybatis"></package>
+    </mappers>
+</configuration>
