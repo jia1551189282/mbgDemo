@@ -8,6 +8,8 @@ public class Employee {
     private String lastName;
     private String email;
     private String gender;
+    private Department dept;
+
 
     public Employee() {
     }
@@ -16,6 +18,14 @@ public class Employee {
         this.lastName = lastName;
         this.email = email;
         this.gender = gender;
+    }
+
+    public Department getDept() {
+        return dept;
+    }
+
+    public void setDept(Department dept) {
+        this.dept = dept;
     }
 
     public Integer getId() {
