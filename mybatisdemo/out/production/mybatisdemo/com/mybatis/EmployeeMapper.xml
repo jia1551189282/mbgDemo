@@ -18,6 +18,10 @@
     <!--
            完成增删改
     -->
+    <!--添加
+        userGeneratedKeys 是否开启返回主键
+        keyProperty  主键对应的字段 也就是mybatis获取到主键值以后，将这个值封装给javaBean的哪个属性
+    -->
     <insert id="addEmp" parameterType="emp"
         useGeneratedKeys="true" keyProperty="id"  databaseId="mysql"
     >
@@ -34,4 +38,113 @@
         delete from tbl_employee where id = #{id}
     </delete>
 
+    <!--
+        参数说明:
+            只有一个参数的时候 默认的mapper接口中的参数名就是绑定名称
+            有多个参数的时候，参数会放在map中 不指定名称的话 key 按顺序就是 param1 param2.。。。
+            使用@Param注解 可以将map中的key改成自定义的名称
+
+            也可以传pojo，或者map将参数放在里面
+            如果多个参数不全是一个pojo中的  可以通过map来传参数
+    -->
+    <select id="getEmpByIdAndLastName" resultType="emp" >
+        select  * from tbl_employee where
+            id = #{id} and last_name = #{lastName}
+    </select>
+
+    <select id="getEmpByPojo" resultType="emp">
+        select * from tbl_employee
+        where id = #{id} and last_name = #{lastName}
+    </select>
+    <select id="getEmpByMap" resultType="emp">
+        select * from tbl_employee
+        where id = #{id} and last_name = #{lastName}
+    </select>
+
+    <!--
+        返回值的封装
+    -->
+    <!--返回值是一个集合（list,set） 写集合中元素的类型就可以了 -->
+    <select id="getEmyByGender" resultType="emp">
+        select * from tbl_employee
+        where gender = #{gender}
+    </select>
+    <select id="getEmpByIdReturnMap" resultType="map">
+        select * from tbl_employee where id = #{id}
+    </select>
+    <select id="getEmpByIdReturnMapPojo" resultMap="empResult">
+        select * from tbl_employee where id = #{id}
+    </select>
+
+    <!--自定义查询结果-->
+    <resultMap id="empResult" type="com.domain.Employee">
+        <id column="id" property="id"></id>
+        <result column="gender" property="gender"></result>
+        <result column="email" property="email"></result>
+        <result column="last_name" property="lastName"></result>
+    </resultMap>
+
+    <!--复杂的自定义结果-->
+        <!-- 联合查询  级联属性封装结果集-->
+    <resultMap id="empResultMap" type="com.domain.Employee">
+        <id column="id" property="id"></id>
+        <result column="gender" property="gender"></result>
+        <result column="email" property="email"></result>
+        <result column="last_name" property="lastName"></result>
+        <result column="did" property="dept.id"></result>
+        <result column="department_name" property="dept.departmentName"></result>
+    </resultMap>
+        <!--使用association 定义关联的单个对象的封装规则：-->
+    <resultMap id="empResultMapAssociation" type="com.domain.Employee">
+        <id column="id" property="id"></id>
+        <id column="gender" property="gender"></id>
+        <id column="email" property="email"></id>
+        <!--
+            association:可以指定联合的Javabean的对象
+                property: 指定联合对象在类中的名称
+                javaType: 指定的这个对象的类型 不能省略
+        -->
+        <association property="dept" javaType="com.domain.Department">
+            <id column="did" property="id"></id>
+            <result column="department_name" property="departmentName"></result>
+        </association>
+    </resultMap>
+
+    <!--
+            使用association进行分步查询
+            1先按员工id 查询员工的信息
+            2根据查询员工信息中的d_id去部门表查出部门的信息
+            3部门设置到员工中
+
+    -->
+    <resultMap id="MyEmpByStep" type="com.domain.Employee">
+        <id column="id" property="id"></id>
+        <id column="gender" property="gender"></id>
+        <id column="email" property="email"></id>
+        <!--
+            association定义关联对象的封装规则
+                select :表明当前属性是调用select 指定的方法查出的结果
+                column ：指定是哪一列的值传给这个方法
+                流程 ：使用select 指定的方法（传入column指定的这列的值)
+        -->
+        <association property="dept"
+            select="com.mybatis.DepartmentMapper.getDeptById"
+            column="d_id"
+        >
+
+        </association>
+
+    </resultMap>
+
+
+    <select id="getEmpAndDeptById" resultMap="MyEmpByStep">
+
+        SELECT e.id id,e.last_name last_name,e.gender gender,e.d_id d_id,
+		d.id did,d.department_name department_name FROM tbl_employee e,tbl_department d
+		WHERE e.d_id=d.id AND e.id=#{id}
+    </select>
+
+    <!--
+
+    -->
 </mapper>
